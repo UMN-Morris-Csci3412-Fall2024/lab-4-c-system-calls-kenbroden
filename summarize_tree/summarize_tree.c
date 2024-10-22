@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 
-static int num_dirs, num_regular;
+static int num_dirs = 0, num_regular = 0;
 
 bool is_dir(const char* path) {
   /*
@@ -16,6 +16,12 @@ bool is_dir(const char* path) {
    * return value from stat() in case there is a problem, e.g., maybe the
    * the file doesn't actually exist.
    */
+  struct stat buf;
+  if (stat(path, &buf) != 0) {
+    perror("stat");
+    exit(1);
+  }
+  return S_ISDIR(buf.st_mode);
 }
 
 /* 
@@ -36,6 +42,23 @@ void process_directory(const char* path) {
    * with a matching call to chdir() to move back out of it when you're
    * done.
    */
+  num_dirs++;
+  printf("Processing directory: %s\n", path); // Debugging output
+  DIR* dir = opendir(path);
+  if (dir == NULL) {
+    perror("opendir");
+    exit(1);
+  }
+
+  struct dirent* entry;
+  chdir(path);
+  while ((entry = readdir(dir)) != NULL) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") != 0) {
+        process_path(entry->d_name);
+    }
+  }
+  chdir("..");
+  closedir(dir);
 }
 
 void process_file(const char* path) {
@@ -43,6 +66,8 @@ void process_file(const char* path) {
    * Update the number of regular files.
    * This is as simple as it seems. :-)
    */
+  num_regular++;
+  printf("Processing file: %s\n", path); // Debugging output
 }
 
 void process_path(const char* path) {
@@ -53,21 +78,18 @@ void process_path(const char* path) {
   }
 }
 
-int main (int argc, char *argv[]) {
-  // Ensure an argument was provided.
-  if (argc != 2) {
-    printf ("Usage: %s <path>\n", argv[0]);
-    printf ("       where <path> is the file or root of the tree you want to summarize.\n");
-    return 1;
-  }
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <path>\n", argv[0]);
+        exit(1);
+    }
 
-  num_dirs = 0;
-  num_regular = 0;
+    printf("Starting processing from: %s\n", argv[1]); // Debugging output
+    process_path(argv[1]);
 
-  process_path(argv[1]);
+    printf("Processed all the files from %s.\n", argv[1]);
+    printf("There were %d directories.\n", num_dirs);
+    printf("There were %d regular files.\n", num_regular);
 
-  printf("There were %d directories.\n", num_dirs);
-  printf("There were %d regular files.\n", num_regular);
-
-  return 0;
+    return 0;
 }
