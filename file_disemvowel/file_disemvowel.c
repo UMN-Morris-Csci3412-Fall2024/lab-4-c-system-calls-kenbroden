@@ -54,7 +54,7 @@ void disemvowel(FILE* inputFile, FILE* outputFile) {
     // free(in_buf);
     // free(out_buf);
 
-    return;
+    // return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -64,18 +64,32 @@ int main(int argc, char *argv[]) {
     FILE *inputFile = stdin;
     FILE *outputFile = stdout;
 
-    // If the user provides file names as command line arguments, this
-    // will open them and set `inputFile` and `outputFile` to them.
-    if (argc == 3) {
+    if (argc == 2) {
         inputFile = fopen(argv[1], "r");
+        if (inputFile == NULL) {
+            perror("Failed to open input file");
+            return 1;
+        }
+    } else if (argc == 3) {
+        inputFile = fopen(argv[1], "r");
+        if (inputFile == NULL) {
+            perror("Failed to open input file");
+            return 1;
+        }
         outputFile = fopen(argv[2], "w");
+        if (outputFile == NULL) {
+            perror("Failed to open output file");
+            fclose(inputFile);
+            return 1;
+        }
     }
 
     disemvowel(inputFile, outputFile);
 
-    // If the user provided file names, we need to close them.
-    if (argc == 3) {
+    if (argc >= 2) {
         fclose(inputFile);
+    }
+    if (argc == 3) {
         fclose(outputFile);
     }
 
