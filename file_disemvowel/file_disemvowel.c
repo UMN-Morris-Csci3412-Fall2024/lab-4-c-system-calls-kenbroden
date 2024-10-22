@@ -1,11 +1,7 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include "file_disemvowel.h"
-
-#include <stdio.h>
 #include <stdbool.h>
+#include "file_disemvowel.h"
+#include <stdlib.h>
 
 #define BUF_SIZE 1024
 
@@ -36,6 +32,7 @@ int copy_non_vowels(int num_chars, char* in_buf, char* out_buf) {
             non_vowels++;
         }
     }
+    return non_vowels;
 }
 
 void disemvowel(FILE* inputFile, FILE* outputFile) {
@@ -45,18 +42,17 @@ void disemvowel(FILE* inputFile, FILE* outputFile) {
      * in a buffer of data, copy the non-vowels to the output buffer, and
      * use fwrite to write that out.
      */
-    char* in_buf = (char*) calloc(BUF_SIZE, sizeof(char));
-    char* out_buf = (char*) calloc(BUF_SIZE, sizeof(char));
-    int num_chars = 0;
-    int non_vowels = 0;
+    char in_buf[BUF_SIZE];
+    char out_buf[BUF_SIZE];
+    int num_chars;
 
     while ((num_chars = fread(in_buf, sizeof(char), BUF_SIZE, inputFile)) > 0) {
-        non_vowels = copy_non_vowels(num_chars, in_buf, out_buf);
-        fwrite(out_buf, sizeof(char), non_vowels, outputFile);
+        int num_non_vowels = copy_non_vowels(num_chars, in_buf, out_buf);
+        fwrite(out_buf, sizeof(char), num_non_vowels, outputFile);
     }
 
-    free(in_buf);
-    free(out_buf);
+    // free(in_buf);
+    // free(out_buf);
 
     return;
 }
@@ -68,10 +64,20 @@ int main(int argc, char *argv[]) {
     FILE *inputFile = stdin;
     FILE *outputFile = stdout;
 
-    // Code that processes the command line arguments
-    // and sets up inputFile and outputFile.
+    // If the user provides file names as command line arguments, this
+    // will open them and set `inputFile` and `outputFile` to them.
+    if (argc == 3) {
+        inputFile = fopen(argv[1], "r");
+        outputFile = fopen(argv[2], "w");
+    }
 
     disemvowel(inputFile, outputFile);
+
+    // If the user provided file names, we need to close them.
+    if (argc == 3) {
+        fclose(inputFile);
+        fclose(outputFile);
+    }
 
     return 0;
 }

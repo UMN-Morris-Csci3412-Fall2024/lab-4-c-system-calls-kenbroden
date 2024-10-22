@@ -4,9 +4,11 @@
 #define UNIT_TESTING
 
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 // Function declarations
-int is_vowel(char c);
+bool is_vowel(char c);
 void disemvowel(FILE *input, FILE *output);
 
 // Main function declaration
