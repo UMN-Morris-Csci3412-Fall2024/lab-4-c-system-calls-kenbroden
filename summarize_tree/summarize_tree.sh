@@ -1,27 +1,24 @@
 #!/bin/bash
 
+# Check for the correct number of arguments
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <path>"
-    echo "       where <path> is the file or root of the tree you want to summarize."
     exit 1
 fi
 
+# Store the path argument
 path=$1
 
-# Check if the path exists and is a directory
+# Store the path argument if it is a valid directory
 if [ ! -d "$path" ]; then
-    echo "Error: $path is not a directory or does not exist."
+    echo "$path is not a valid directory"
     exit 1
 fi
 
-# Count directories and subtract 1 to exclude the root directory itself
-num_dirs=$(find "$path" -type d | wc -l | xargs)
-num_dirs=$((num_dirs - 1))
-
-# Count regular files
-num_regular=$(find "$path" -type f | wc -l | xargs)
+# Count the number of files in the directory
+num_dirs=$(find "$path" -type d | wc -l)
+num_files=$(find "$path" -type f | wc -l)
 
 # Print the results
-echo "Processed all the files from $path."
 echo "There were $num_dirs directories."
-echo "There were $num_regular regular files."
+echo "There were $num_files regular files."
